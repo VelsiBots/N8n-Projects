@@ -1,0 +1,460 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "1c-products-sync",
+        "options": {}
+      },
+      "id": "5cbc0e32-c416-4034-b301-fab1814c0db0",
+      "name": "1C Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        368,
+        80
+      ],
+      "webhookId": "YOUR_WEBHOOK_ID"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.telegram.org/bot{{ $('Config').first().json.bot_token }}/sendMessage",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "chat_id",
+              "value": "={{ $('Telegram Trigger').item.json.callback_query.message.chat.id }}"
+            },
+            {
+              "name": "text",
+              "value": "=Привет! Вот обновленный список номенклатуры:\n\n{{ $json.body.map(item => '📦 <b>' + item.Name + '</b> — ' + item.Price + ' руб.').join('\\n') }}\n\n"
+            },
+            {
+              "name": "parse_mode",
+              "value": "HTML"
+            },
+            {
+              "name": "reply_markup",
+              "value": "={{ JSON.stringify({ inline_keyboard: [[{ text: 'Назад', callback_data: 'back_night' }]] }) }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -32,
+        480
+      ],
+      "id": "728c9c17-6fc6-46d5-871e-649c69908a3f",
+      "name": "catalog msg"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "aa492289-c7d1-48a4-829f-6f97328a8d6b",
+                    "leftValue": "={{ $json.message.text }}",
+                    "rightValue": "/start",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "c995ef8d-b12a-40a7-b741-1c21db776c68",
+                    "leftValue": "={{ $('Telegram Trigger').item.json.callback_query.data }}",
+                    "rightValue": "social_other",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "8c2b5640-6ec7-41c0-8861-5241bd349bca",
+                    "leftValue": "={{ $('Telegram Trigger').item.json.callback_query.data }}",
+                    "rightValue": "=works_avrora",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "52cf9a88-26de-4196-ab20-72cefc17a2ef",
+                    "leftValue": "={{ $('Telegram Trigger').item.json.callback_query.data }}",
+                    "rightValue": "=back_night",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -736,
+        496
+      ],
+      "id": "1c3b73ef-4eb7-489c-9e0a-bada0cf50817",
+      "name": "Switch1"
+    },
+    {
+      "parameters": {
+        "updates": [
+          "*"
+        ],
+        "limit": 2
+      },
+      "type": "n8n-nodes-telegram-polling.telegramPollingTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1824,
+        544
+      ],
+      "id": "662cf457-e0d1-498f-aa1c-14864a0a952d",
+      "name": "Telegram Trigger"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.telegram.org/bot{{ $('Config').first().json.bot_token }}/sendMessage",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "chat_id",
+              "value": "={{ $json.message.chat.id }}"
+            },
+            {
+              "name": "text",
+              "value": "={{ $('Config').first().json.start_message_html }}"
+            },
+            {
+              "name": "parse_mode",
+              "value": "HTML"
+            },
+            {
+              "name": "reply_markup",
+              "value": "={{ JSON.stringify({ inline_keyboard: [[{ text: 'Новинки', callback_data: 'works_avrora' }], [{ text: 'Канал', url: $('Config').first().json.channel_url }], [{ text: 'Контакты и ссылки📱', callback_data: 'social_other' }]] }) }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        0,
+        0
+      ],
+      "id": "2de949e6-9839-4a88-8921-4ce7214bec48",
+      "name": "start msg",
+      "alwaysOutputData": false,
+      "retryOnFail": true,
+      "maxTries": 5,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.telegram.org/bot{{ $('Config').first().json.bot_token }}/editMessageText",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "chat_id",
+              "value": "={{ $('Telegram Trigger').item.json.callback_query?.message?.chat?.id || $json.chat_id }}"
+            },
+            {
+              "name": "text",
+              "value": "={{ $('Config').first().json.contacts_message_text }}"
+            },
+            {
+              "name": "parse_mode",
+              "value": "Markdown"
+            },
+            {
+              "name": "reply_markup",
+              "value": "={{ JSON.stringify({ inline_keyboard: [[{ text: 'Назад', callback_data: 'back_night' }]] }) }}"
+            },
+            {
+              "name": "message_id",
+              "value": "={{ $('Telegram Trigger').item.json.callback_query?.message?.message_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        0,
+        208
+      ],
+      "id": "d790a70c-2919-46cf-a107-249c3d2234cd",
+      "name": "contacts msg",
+      "alwaysOutputData": false,
+      "retryOnFail": true,
+      "maxTries": 5,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.telegram.org/bot{{ $('Config').first().json.bot_token }}/editMessageText",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "chat_id",
+              "value": "={{ $json.callback_query.message.chat.id }}"
+            },
+            {
+              "name": "text",
+              "value": "={{ $('Config').first().json.start_edit_message_html }}"
+            },
+            {
+              "name": "parse_mode",
+              "value": "HTML"
+            },
+            {
+              "name": "reply_markup",
+              "value": "={{ JSON.stringify({ inline_keyboard: [[{ text: 'Новинки', callback_data: 'works_avrora' }], [{ text: 'Канал', url: $('Config').first().json.channel_url }], [{ text: 'Контакты и ссылки📱', callback_data: 'social_other' }]] }) }}"
+            },
+            {
+              "name": "message_id",
+              "value": "={{ $json.callback_query.message.message_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        128,
+        736
+      ],
+      "id": "0004b429-e67a-4c91-a439-f16dfa2afd58",
+      "name": "start msg1",
+      "alwaysOutputData": false,
+      "retryOnFail": true,
+      "maxTries": 5,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const globalData = $getWorkflowStaticData('global');\nglobalData.products = $input.first().json.body;\nreturn [{ json: { message: \"Данные из 1С успешно сохранены в память!\" } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        576,
+        80
+      ],
+      "id": "d9d2c92c-324e-41e7-8b7a-b9fbe5ef64f3",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "jsCode": "const globalData = $getWorkflowStaticData('global');\nconst savedProducts = globalData.products || [{\"Name\": \"База обновляется. Нажми кнопку в 1С!\", \"Price\": 0}];\nreturn [{ json: { body: savedProducts } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -288,
+        480
+      ],
+      "id": "03a6f8d7-64a3-4c60-bf01-d008be78ff6e",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ef2f0170-190b-4e22-83ad-89b9e729a749",
+              "name": "bot_token",
+              "value": "YOUR_TELEGRAM_BOT_TOKEN",
+              "type": "string"
+            },
+            {
+              "id": "cf3a0b12-58e1-4c12-9c3f-d891b0f1a4e5",
+              "name": "channel_url",
+              "value": "https://t.me/your_company_channel",
+              "type": "string"
+            },
+            {
+              "id": "9a1d4f20-410a-4933-bf3c-648b2b71b782",
+              "name": "start_message_html",
+              "value": "👋 <b>Доброго времени суток!</b>\n\nЭто — официальный бот компании. Задайте вопрос напрямую или используйте интерактивные кнопки ниже:\n\n<b>Или просто напишите интересующий Вас вопрос в чат, и наш ассистент постарается ответить на все Ваши вопросы!</b> 🤝",
+              "type": "string"
+            },
+            {
+              "id": "780d6bf4-8dce-412e-a579-2479e05f6e89",
+              "name": "start_edit_message_html",
+              "value": "<b>Доброго времени суток!</b>\n\nЭто — официальный бот компании. Задайте вопрос напрямую или используйте интерактивные кнопки ниже:\n\n<b>Или просто напишите интересующий Вас вопрос в чат, и наш ассистент постарается ответить на все Ваши вопросы!</b>",
+              "type": "string"
+            },
+            {
+              "id": "51f2bc39-a9a3-4b68-b80c-e2f416a49db2",
+              "name": "contacts_message_text",
+              "value": "Все социальные сети компании:\nTelegram канал: @your_channel\nПрайсы в Telegram: https://t.me/your_prices\nНаш магазин: https://vk.com/your_shop\nГруппа: https://vk.com/your_group\n\nКонтактная информация:\nОтдел продаж: @manager_telegram\n📞 Телефон: +7 (000) 000-00-00\n\nВсегда рады общению! 😊📞",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1456,
+        544
+      ],
+      "id": "8c0ca5e6-3848-4274-bae7-bd937b10a947",
+      "name": "Config"
+    }
+  ],
+  "connections": {
+    "1C Webhook": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch1": {
+      "main": [
+        [
+          {
+            "node": "start msg",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "contacts msg",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "start msg1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "catalog msg",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Config": {
+      "main": [
+        [
+          {
+            "node": "Switch1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}
