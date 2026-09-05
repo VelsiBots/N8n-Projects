@@ -1,14 +1,8 @@
-Production-grade automation templates and custom JavaScript workflows integrating n8n with Telegram Bot API, PostgreSQL, Google Workspace, 1C:Enterprise, and external REST APIs.
-
-Each repository includes deployment guides, workflow JSONs, and configuration instructions.
+Designed and implemented an automated middleware layer in n8n connecting an on-premise 1C:Enterprise database to a customer-facing Telegram bot. The solution eliminates manual inventory updates and gives customers instant access to product pricing and regional representative contacts directly inside Telegram.
 
 Prerequisites:
 
-n8n self-hosted or cloud (v1.x / v2.x+)
-
-Minimum server resources: 1 vCPU, 1–2 GB RAM (for queue/worker modes)
-
-Valid API credentials for connected third-party platforms
+Telegram Bot API Token + 1C Webhook Auth Token + Public n8n Webhook URL + Company Channel Links & Regional Contacts
 
 License: Open source under the MIT License (free to adapt and deploy for personal or commercial projects).
 
